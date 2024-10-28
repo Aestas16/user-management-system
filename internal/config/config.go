@@ -7,6 +7,7 @@ import (
 
 type Configuration struct {
     Server  ServerConfig    `yaml:"server"`
+    SQL     SQLConfig       `yaml:"postgresql"`
 }
 type ServerConfig struct {
     Port    string      `yaml:"port"`
@@ -16,6 +17,12 @@ type ServerConfig struct {
 type AdminConfig struct {
     Username    string  `yaml:"username"`
     Password    string  `yaml:"password"`
+}
+type SQLConfig struct {
+    User    string  `yaml:"user"`
+    Password    string  `yaml:"password"`
+    Port    string  `yaml:"port"`
+    DBName    string  `yaml:"dbname"`
 }
 
 var Config Configuration

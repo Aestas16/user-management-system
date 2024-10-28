@@ -4,3 +4,8 @@ server:
   admin:
     username: admin
     password: password
+postgresql:
+  user: postgres
+  password: password
+  port: 5432
+  dbname: ums
