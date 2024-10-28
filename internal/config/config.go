@@ -19,10 +19,10 @@ type AdminConfig struct {
     Password    string  `yaml:"password"`
 }
 type SQLConfig struct {
-    User    string  `yaml:"user"`
+    User        string  `yaml:"user"`
     Password    string  `yaml:"password"`
-    Port    string  `yaml:"port"`
-    DBName    string  `yaml:"dbname"`
+    Port        string  `yaml:"port"`
+    DBName      string  `yaml:"dbname"`
 }
 
 var Config Configuration
