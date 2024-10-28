@@ -10,6 +10,7 @@ type Configuration struct {
 }
 type ServerConfig struct {
     Port    string      `yaml:"port"`
+    Version string      `yaml:"version"`
     Admin   AdminConfig `yaml:"admin"`
 }
 type AdminConfig struct {
