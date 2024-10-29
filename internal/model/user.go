@@ -31,3 +31,12 @@ func findByName(username string) (*User, error) {
     }
     return user, result.Error
 }
+
+func findById(id uint) (*User, error) {
+    user := User{}
+    result := db.Model(&User{}).Where("id = ?", id).First(&user)
+    if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+        return nil, errors("user not found")
+    }
+    return user, result.Error
+}
