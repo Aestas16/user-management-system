@@ -12,18 +12,26 @@ type User struct {
 }
 
 func createUser(user *User) error {
-    _, err := findByName(user.username)
+    _, err := findUserByName(user.username)
     if err == nil {
         return errors("user already exist")
     }
-    return db.Model(&User{}).Create(user);
+    return db.Model(&User{}).Create(user)
 }
 
 func saveUser(user *User) error {
-    return db.Save(user).Error;
+    return db.Save(user).Error
 }
 
-func findByName(username string) (*User, error) {
+func deleteUserById(id uint) error {
+    _, err := findUserById(id)
+    if err != nil {
+        return err
+    }
+    return db.Delete(&User{}, id).Error
+}
+
+func findUserByName(username string) (*User, error) {
     user := User{}
     result := db.Model(&User{}).Where("username = ?", username).First(&user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -32,7 +40,7 @@ func findByName(username string) (*User, error) {
     return user, result.Error
 }
 
-func findById(id uint) (*User, error) {
+func findUserById(id uint) (*User, error) {
     user := User{}
     result := db.Model(&User{}).Where("id = ?", id).First(&user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
