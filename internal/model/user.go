@@ -19,9 +19,13 @@ func createUser(user *User) error {
     return db.Model(&User{}).Create(user);
 }
 
+func saveUser(user *User) error {
+    return db.Save(user).Error;
+}
+
 func findByName(username string) (*User, error) {
     user := User{}
-    result := db.Where("username = ?", username).First(&user)
+    result := db.Model(&User{}).Where("username = ?", username).First(&user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
         return nil, errors("user not found")
     }
