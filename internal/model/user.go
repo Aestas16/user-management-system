@@ -11,10 +11,13 @@ type User struct {
     Email       string  `json:"email"`
 }
 
+var userNotFound = errors("user not found")
+var userAlreadyExist = errors("user already exist")
+
 func createUser(user *User) error {
     _, err := findUserByName(user.username)
     if err == nil {
-        return errors("user already exist")
+        return userAlreadyExist
     }
     return db.Model(&User{}).Create(user)
 }
@@ -35,7 +38,7 @@ func findUserByName(username string) (*User, error) {
     user := User{}
     result := db.Model(&User{}).Where("username = ?", username).First(&user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-        return nil, errors("user not found")
+        return nil, userNotFound
     }
     return user, result.Error
 }
@@ -44,7 +47,7 @@ func findUserById(id uint) (*User, error) {
     user := User{}
     result := db.Model(&User{}).Where("id = ?", id).First(&user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-        return nil, errors("user not found")
+        return nil, userNotFound
     }
     return user, result.Error
 }
