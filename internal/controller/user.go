@@ -8,7 +8,12 @@ import (
 )
 
 func userInfo(c echo.Context) error {
+    claims := c.Get("claims")
+    user := claims.user
+    isAdmin := claims.isAdmin
     id := c.Param("id")
+    if !isAdmin && user.ID != id:
+        return echo.NewHTTPError(403, "access denied")
     user, err := model.findUserById(id)
     if err == model.userNotFound {
         return echo.ErrNotFound
