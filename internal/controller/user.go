@@ -27,7 +27,7 @@ func userInfo(c echo.Context) error {
     return c.JSON(200, &resp);
 }
 
-func userUpdate(c echo.Context) error {
+func updateUser(c echo.Context) error {
     claims := c.Get("claims")
     id := c.Param("id")
     if !claims.isAdmin && claims.user.ID != id:
@@ -52,6 +52,23 @@ func userUpdate(c echo.Context) error {
         user.Email = req.Email
     }
     if err := model.saveUser(user), err != nil {
+        return echo.ErrInternalServerError
+    }
+    return c.JSON(200)
+}
+
+func deleteUser(c echo.Context) error {
+    claims := c.Get("claims")
+    id := c.Param("id")
+    if !claims.isAdmin:
+        return echo.NewHTTPError(403, "access denied")
+    user, err := model.findUserById(id)
+    if err == model.userNotFound {
+        return echo.ErrNotFound
+    } else if err != nil {
+        return echo.ErrInternalServerError
+    }
+    if err := model.deleteUserById(id), err != nil {
         return echo.ErrInternalServerError
     }
     return c.JSON(200)
