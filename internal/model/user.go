@@ -15,7 +15,7 @@ var userNotFound = errors.New("user not found")
 var userAlreadyExist = errors.New("user already exist")
 
 func createUser(user *User) error {
-    _, err := findUserByName(user.username)
+    _, err := findUserByName(user.Username)
     if err == nil {
         return userAlreadyExist
     }
