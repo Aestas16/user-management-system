@@ -2,7 +2,7 @@ package router
 
 import (
     "fmt"
-    "github.com/labstack/echo/v4"
+    "github.com/labstack/echo"
 
     "user-management-system/internal/config"
     "user-management-system/internal/controller"

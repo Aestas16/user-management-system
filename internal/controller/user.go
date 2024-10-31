@@ -4,7 +4,7 @@ import (
     "fmt"
     "time"
     "crypto/md5"
-    "github.com/labstack/echo/v4"
+    "github.com/labstack/echo"
 
     "user-management-system/internal/config"
     "user-management-system/internal/model"
