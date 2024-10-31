@@ -2,11 +2,13 @@ package controller
 
 import (
     "fmt"
+    "time"
     "crypto/md5"
     "github.com/labstack/echo/v4"
 
     "user-management-system/internal/config"
     "user-management-system/internal/model"
+    "user-management-system/internal/utils"
 )
 
 type User struct {
@@ -56,7 +58,11 @@ func updateUser(c echo.Context) error {
     if err := model.saveUser(user), err != nil {
         return echo.ErrInternalServerError
     }
-    return c.JSON(200)
+    var resp struct {
+        message string
+    }
+    resp.message = "Success!"
+    return c.JSON(200, &resp)
 }
 
 func deleteUser(c echo.Context) error {
@@ -73,7 +79,11 @@ func deleteUser(c echo.Context) error {
     if err := model.deleteUserById(id), err != nil {
         return echo.ErrInternalServerError
     }
-    return c.JSON(200)
+    var resp struct {
+        message string
+    }
+    resp.message = "Success!"
+    return c.JSON(200, &resp)
 }
 
 func registerUser(c echo.Context) error {
@@ -94,5 +104,25 @@ func registerUser(c echo.Context) error {
     } else if err != nil {
         return echo.ErrInternalServerError
     }
-    return c.JSON(201)
+    var resp struct {
+        message string
+    }
+    resp.message = "Success!"
+    return c.JSON(201, &resp)
+}
+
+func refreshToken(c echo.Context) error {
+    claims := c.Get("claims")
+    expirationTime := time.Now().Add(5 * time.Minute)
+    claims.ExpiresAt.Time = expirationTime
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+    tokenString, err := token.SignedString(utils.jwtKey)
+    if err != nil {
+        return echo.ErrInternalServerError
+    }
+    var resp struct {
+        tokenString string
+    }
+    resp.tokenString = tokenString
+    return c.JSON(200, &resp)
 }
