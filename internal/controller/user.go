@@ -1,6 +1,8 @@
 package controller
 
 import (
+    "fmt"
+    "crypto/md5"
     "github.com/labstack/echo/v4"
 
     "user-management-system/internal/config"
@@ -49,7 +51,7 @@ func updateUser(c echo.Context) error {
         return echo.ErrBadRequest
     }
     user.Username = req.Username
-    user.Password = req.Password
+    user.Password = fmt.Sprintf("%x", md5.Sum([]byte(req.Password)));
     user.Email = req.Email
     if err := model.saveUser(user), err != nil {
         return echo.ErrInternalServerError
@@ -79,12 +81,12 @@ func registerUser(c echo.Context) error {
     if err := c.Bind(&req), err != nil {
         return echo.ErrBadRequest
     }
-    if req.Username == "" {
+    if req.Username == "" || req.Password == "" {
         return echo.ErrBadRequest
     }
     user := model.User{}
     user.Username = req.Username
-    user.Password = req.Password
+    user.Password = fmt.Sprintf("%x", md5.Sum([]byte(req.Password)));
     user.Email = req.Email
     err := model.createUser(user)
     if err == model.userAlreadyExist {
