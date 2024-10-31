@@ -12,6 +12,7 @@ import (
 func main() {
     e := echo.New()
     e.Use(middleware.Logger())
+    e.Use(middleware.Recover())
     config.InitConfig()
     model.InitDB()
     router.InitRouter(e)
