@@ -38,3 +38,20 @@ func parseToken(tokenString string) (Claims, err) {
     }
     return claims, err
 }
+
+func jwtAuthMiddleware() echo.MiddlewareFunc {
+    return func(next echo.HandlerFunc) echo.HandlerFunc {
+        return func(c echo.Context) error {
+            tokenString := c.Request().Header.Get("Authorization")
+            if tokenString == "" {
+                return echo.NewHTTPError(401, "token not found")
+            }
+            claims, err := parseToken(tokenString)
+            if err != nil {
+                return echo.NewHTTPError(401, "invalid token");
+            }
+            c.Set("claims", claims)
+            return next(c);
+        }
+    }
+}
