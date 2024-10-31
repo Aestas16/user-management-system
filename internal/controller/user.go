@@ -9,10 +9,8 @@ import (
 
 func userInfo(c echo.Context) error {
     claims := c.Get("claims")
-    user := claims.user
-    isAdmin := claims.isAdmin
     id := c.Param("id")
-    if !isAdmin && user.ID != id:
+    if !claims.isAdmin && claims.user.ID != id:
         return echo.NewHTTPError(403, "access denied")
     user, err := model.findUserById(id)
     if err == model.userNotFound {
@@ -27,4 +25,34 @@ func userInfo(c echo.Context) error {
     resp.username = user.username
     resp.email = user.email
     return c.JSON(200, &resp);
+}
+
+func userUpdate(c echo.Context) error {
+    claims := c.Get("claims")
+    id := c.Param("id")
+    if !claims.isAdmin && claims.user.ID != id:
+        return echo.NewHTTPError(403, "access denied")
+    user, err := model.findUserById(id)
+    if err == model.userNotFound {
+        return echo.ErrNotFound
+    } else if err != nil {
+        return echo.ErrInternalServerError
+    }
+    req := model.User{}
+    if err := c.Bind(&req), err != nil {
+        return echo.ErrBadRequest
+    }
+    if req.Username != "" {
+        user.Username = req.Username
+    }
+    if req.Password != "" {
+        user.Password = req.Password
+    }
+    if req.Email != "" {
+        user.Email = req.Email
+    }
+    if err := model.saveUser(user), err != nil {
+        return echo.ErrInternalServerError
+    }
+    return c.JSON(200)
 }
