@@ -4,12 +4,13 @@ import (
     "time"
     "errors"
     "github.com/golang-jwt/jwt/v4"
+    "github.com/labstack/echo"
 
     "user-management-system/internal/model"
     "user-management-system/internal/config"
 )
 
-var jwtKey = []byte(config.Config.JwtKey)
+var jwtKey = []byte(config.Config.Server.JwtKey)
 
 type Claims struct {
     user model.User
@@ -17,7 +18,7 @@ type Claims struct {
     jwt.RegisteredClaims
 }
 
-func generateToken(user model.User, isAdmin bool) (string, err) {
+func generateToken(user model.User, isAdmin bool) (string, error) {
     expirationTime := time.Now().Add(5 * time.Minute)
     claims := &Claims{
         user: user,
@@ -31,16 +32,16 @@ func generateToken(user model.User, isAdmin bool) (string, err) {
     return tokenString, err
 }
 
-func parseToken(tokenString string) (Claims, err) {
+func parseToken(tokenString string) (*Claims, error) {
     claims := &Claims{}
     token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
         return jwtKey, nil
     })
     if !token.Valid || err != nil {
-        return nil, errors.New("invalid token")
+        return claims, errors.New("invalid token")
     }
     if time.Until(claims.ExpiresAt.Time) < 0 {
-        return nil, errors.New("token expired")
+        return claims, errors.New("token expired")
     }
     return claims, err
 }
