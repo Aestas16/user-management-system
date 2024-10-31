@@ -37,10 +37,10 @@ func parseToken(tokenString string) (Claims, err) {
         return jwtKey, nil
     })
     if !token.Valid || err != nil {
-        return nil, errors("invalid token")
+        return nil, errors.New("invalid token")
     }
     if time.Until(claims.ExpiresAt.Time) < 0 {
-        return nil, errors("token expired")
+        return nil, errors.New("token expired")
     }
     return claims, err
 }
@@ -53,9 +53,9 @@ func jwtAuthMiddleware() echo.MiddlewareFunc {
                 return echo.NewHTTPError(401, "token not found")
             }
             claims, err := parseToken(tokenString)
-            if err == errors("invalid token") {
+            if err == errors.New("invalid token") {
                 return echo.NewHTTPError(401, "invalid token")
-            } else if err == errors("token expired") {
+            } else if err == errors.New("token expired") {
                 return echo.NewHTTPError(401, "token expired")
             } else if err != nil {
                 return echo.ErrInternalServerError

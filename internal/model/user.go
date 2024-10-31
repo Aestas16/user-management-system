@@ -11,8 +11,8 @@ type User struct {
     Email       string  `json:"email"`
 }
 
-var userNotFound = errors("user not found")
-var userAlreadyExist = errors("user already exist")
+var userNotFound = errors.New("user not found")
+var userAlreadyExist = errors.New("user already exist")
 
 func createUser(user *User) error {
     _, err := findUserByName(user.username)
