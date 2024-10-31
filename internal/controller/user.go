@@ -7,6 +7,12 @@ import (
     "user-management-system/internal/model"
 )
 
+type User struct {
+    Username    string
+    Password    string
+    Email       string
+}
+
 func userInfo(c echo.Context) error {
     claims := c.Get("claims")
     id := c.Param("id")
@@ -38,19 +44,13 @@ func updateUser(c echo.Context) error {
     } else if err != nil {
         return echo.ErrInternalServerError
     }
-    req := model.User{}
+    req := User{}
     if err := c.Bind(&req), err != nil {
         return echo.ErrBadRequest
     }
-    if req.Username != "" {
-        user.Username = req.Username
-    }
-    if req.Password != "" {
-        user.Password = req.Password
-    }
-    if req.Email != "" {
-        user.Email = req.Email
-    }
+    user.Username = req.Username
+    user.Password = req.Password
+    user.Email = req.Email
     if err := model.saveUser(user), err != nil {
         return echo.ErrInternalServerError
     }
@@ -72,4 +72,25 @@ func deleteUser(c echo.Context) error {
         return echo.ErrInternalServerError
     }
     return c.JSON(200)
+}
+
+func registerUser(c echo.Context) error {
+    req := User{}
+    if err := c.Bind(&req), err != nil {
+        return echo.ErrBadRequest
+    }
+    if req.Username == "" {
+        return echo.ErrBadRequest
+    }
+    user := model.User{}
+    user.Username = req.Username
+    user.Password = req.Password
+    user.Email = req.Email
+    err := model.createUser(user)
+    if err == model.userAlreadyExist {
+        return echo.NewHTTPError(403, "access denied")
+    } else if err != nil {
+        return echo.ErrInternalServerError
+    }
+    return c.JSON(201)
 }
