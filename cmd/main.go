@@ -2,8 +2,8 @@ package main
 
 import (
     "strconv"
-    "github.com/labstack/echo"
-    "github.com/labstack/echo/middleware"
+    "github.com/labstack/echo/v4"
+    "github.com/labstack/echo/v4/middleware"
 
     "user-management-system/internal/config"
     "user-management-system/internal/model"
