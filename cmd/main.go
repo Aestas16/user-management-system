@@ -2,14 +2,18 @@ package main
 
 import (
     "fmt"
-    "net/http"
     "github.com/labstack/echo"
 
     "user-management-system/internal/config"
     "user-management-system/internal/model"
+    "user-management-system/internal/router"
 )
 
 func main() {
-    config.Init();
-    model.InitDB();
+    e := echo.New()
+    e.Use(middleware.Logger())
+    config.InitConfig()
+    model.InitDB()
+    router.InitRouter(e)
+    e.Logger.Fatal(e.Start(":" + config.Config.Server.Port))
 }

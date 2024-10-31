@@ -28,7 +28,7 @@ type SQLConfig struct {
 
 var Config Configuration
 
-func Init() {
+func InitConfig() {
     yamlFile, err := os.ReadFile("config.yaml")
     if err != nil {
         panic(err)
