@@ -1,6 +1,7 @@
 package utils
 
 import (
+    "time"
     "errors"
     "github.com/golang-jwt/jwt/v4"
 
@@ -12,13 +13,15 @@ var jwtKey = []byte(config.Config.JwtKey)
 
 type Claims struct {
     user model.User
+    isAdmin bool
     jwt.RegisteredClaims
 }
 
-func generateToken(user model.User) (string, err) {
+func generateToken(user model.User, isAdmin bool) (string, err) {
     expirationTime := time.Now().Add(5 * time.Minute)
     claims := &Claims{
         user: user,
+        isAdmin: isAdmin,
         RegisteredClaims: jwt.RegisteredClaims{
             ExpiresAt: jwt.NewNumericDate(expirationTime)
         }
@@ -36,6 +39,9 @@ func parseToken(tokenString string) (Claims, err) {
     if !token.Valid || err != nil {
         return nil, errors("invalid token")
     }
+    if time.Until(claims.ExpiresAt.Time) < 0 {
+        return nil, errors("token expired")
+    }
     return claims, err
 }
 
@@ -47,8 +53,12 @@ func jwtAuthMiddleware() echo.MiddlewareFunc {
                 return echo.NewHTTPError(401, "token not found")
             }
             claims, err := parseToken(tokenString)
-            if err != nil {
-                return echo.NewHTTPError(401, "invalid token");
+            if err == errors("invalid token") {
+                return echo.NewHTTPError(401, "invalid token")
+            } else if err == errors("token expired") {
+                return echo.NewHTTPError(401, "token expired")
+            } else if err != nil {
+                return echo.ErrInternalServerError
             }
             c.Set("claims", claims)
             return next(c);
