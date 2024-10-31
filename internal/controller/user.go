@@ -3,6 +3,7 @@ package controller
 import (
     "fmt"
     "time"
+    "strconv"
     "crypto/md5"
     "github.com/labstack/echo"
 
@@ -17,14 +18,17 @@ type User struct {
     Email       string
 }
 
-func userInfo(c echo.Context) error {
-    claims := c.Get("claims")
-    id := c.Param("id")
-    if !claims.isAdmin && claims.user.ID != id {
+func UserInfo(c echo.Context) error {
+    claims := c.Get("claims").(utils.Claims)
+    id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+    if err != nil {
+        return echo.ErrNotFound
+    }
+    if !claims.IsAdmin && claims.User.ID != id {
         return echo.NewHTTPError(403, "access denied")
     }
-    user, err := model.findUserById(id)
-    if err == model.userNotFound {
+    user, err := model.FindUserById(id)
+    if err == model.ErrUserNotFound {
         return echo.ErrNotFound
     } else if err != nil {
         return echo.ErrInternalServerError
@@ -33,31 +37,34 @@ func userInfo(c echo.Context) error {
         username    string
         email       string
     }
-    resp.username = user.username
-    resp.email = user.email
+    resp.username = user.Username
+    resp.email = user.Email
     return c.JSON(200, &resp)
 }
 
-func updateUser(c echo.Context) error {
-    claims := c.Get("claims")
-    id := c.Param("id")
-    if !claims.isAdmin && claims.user.ID != id {
+func UpdateUser(c echo.Context) error {
+    claims := c.Get("claims").(*utils.Claims)
+    id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+    if err != nil {
+        return echo.ErrNotFound
+    }
+    if !claims.IsAdmin && claims.User.ID != id {
         return echo.NewHTTPError(403, "access denied")
     }
-    user, err := model.findUserById(id)
-    if err == model.userNotFound {
+    user, err := model.FindUserById(id)
+    if err == model.ErrUserNotFound {
         return echo.ErrNotFound
     } else if err != nil {
         return echo.ErrInternalServerError
     }
     req := User{}
-    if err := c.Bind(&req), err != nil {
+    if err := c.Bind(&req); err != nil {
         return echo.ErrBadRequest
     }
     user.Username = req.Username
     user.Password = fmt.Sprintf("%x", md5.Sum([]byte(req.Password)))
     user.Email = req.Email
-    if err := model.saveUser(user), err != nil {
+    if err := model.SaveUser(user); err != nil {
         return echo.ErrInternalServerError
     }
     var resp struct {
@@ -67,19 +74,22 @@ func updateUser(c echo.Context) error {
     return c.JSON(200, &resp)
 }
 
-func deleteUser(c echo.Context) error {
-    claims := c.Get("claims")
-    id := c.Param("id")
-    if !claims.isAdmin {
+func DeleteUser(c echo.Context) error {
+    claims := c.Get("claims").(utils.Claims)
+    id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+    if err != nil {
+        return echo.ErrNotFound
+    }
+    if !claims.IsAdmin {
         return echo.NewHTTPError(403, "access denied")
     }
-    user, err := model.findUserById(id)
-    if err == model.userNotFound {
+    _, err = model.FindUserById(id)
+    if err == model.ErrUserNotFound {
         return echo.ErrNotFound
     } else if err != nil {
         return echo.ErrInternalServerError
     }
-    if err := model.deleteUserById(id), err != nil {
+    if err := model.DeleteUserById(id); err != nil {
         return echo.ErrInternalServerError
     }
     var resp struct {
@@ -89,9 +99,9 @@ func deleteUser(c echo.Context) error {
     return c.JSON(200, &resp)
 }
 
-func registerUser(c echo.Context) error {
+func RegisterUser(c echo.Context) error {
     req := User{}
-    if err := c.Bind(&req), err != nil {
+    if err := c.Bind(&req); err != nil {
         return echo.ErrBadRequest
     }
     if req.Username == "" || req.Password == "" {
@@ -101,8 +111,8 @@ func registerUser(c echo.Context) error {
     user.Username = req.Username
     user.Password = fmt.Sprintf("%x", md5.Sum([]byte(req.Password)))
     user.Email = req.Email
-    err := model.createUser(user)
-    if err == model.userAlreadyExist {
+    err := model.CreateUser(&user)
+    if err == model.ErrUserAlreadyExist {
         return echo.NewHTTPError(403, "access denied")
     } else if err != nil {
         return echo.ErrInternalServerError
@@ -114,16 +124,16 @@ func registerUser(c echo.Context) error {
     return c.JSON(201, &resp)
 }
 
-func loginUser(c echo.Context) error {
+func LoginUser(c echo.Context) error {
     var req struct {
         Username    string
         Password    string
     }
-    if err := c.Bind(&req), err != nil {
+    if err := c.Bind(&req); err != nil {
         return echo.ErrBadRequest
     }
     if req.Username == config.Config.Server.Admin.Username && req.Password == config.Config.Server.Admin.Password {
-        tokenString, err := utils.generateToken(model.User{}, true)
+        tokenString, err := utils.GenerateToken(&model.User{}, true)
         if err != nil {
             return echo.ErrInternalServerError
         }
@@ -134,8 +144,8 @@ func loginUser(c echo.Context) error {
         return c.JSON(200, &resp)
     }
     req.Password = fmt.Sprintf("%x", md5.Sum([]byte(req.Password)))
-    user, err := model.findUserByName(req.Username)
-    if err == model.userNotFound {
+    user, err := model.FindUserByName(req.Username)
+    if err == model.ErrUserNotFound {
         return echo.NewHTTPError(403, "user not found")
     } else if err != nil {
         return echo.ErrInternalServerError
@@ -143,7 +153,7 @@ func loginUser(c echo.Context) error {
     if user.Password != req.Password {
         return echo.NewHTTPError(403, "wrong password")
     }
-    tokenString, err := utils.generateToken(user, false)
+    tokenString, err := utils.GenerateToken(user, false)
     if err != nil {
         return echo.ErrInternalServerError
     }
@@ -154,8 +164,8 @@ func loginUser(c echo.Context) error {
     return c.JSON(200, &resp)
 }
 
-func refreshToken(c echo.Context) error {
-    claims := c.Get("claims")
+func RefreshToken(c echo.Context) error {
+    claims := c.Get("claims").(utils.Claims)
     expirationTime := time.Now().Add(5 * time.Minute)
     claims.ExpiresAt.Time = expirationTime
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

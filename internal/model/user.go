@@ -6,49 +6,49 @@ import (
 )
 
 type User struct {
-    ID          uint    `gorm:"primaryKey;autoIncrement;index"`
+    ID          uint64    `gorm:"primaryKey;autoIncrement;index"`
     Username    string  `gorm:"type:varchar(80);unique;not null;" json:"username"`
     Password    string  `json:"password"`
     Email       string  `json:"email"`
 }
 
-var userNotFound = errors.New("user not found")
-var userAlreadyExist = errors.New("user already exist")
+var ErrUserNotFound = errors.New("user not found")
+var ErrUserAlreadyExist = errors.New("user already exist")
 
-func createUser(user *User) error {
-    _, err := findUserByName(user.Username)
+func CreateUser(user *User) error {
+    _, err := FindUserByName(user.Username)
     if err == nil {
-        return userAlreadyExist
+        return ErrUserAlreadyExist
     }
     return db.Model(&User{}).Create(user).Error
 }
 
-func saveUser(user *User) error {
+func SaveUser(user *User) error {
     return db.Save(user).Error
 }
 
-func deleteUserById(id uint) error {
-    _, err := findUserById(id)
+func DeleteUserById(id uint64) error {
+    _, err := FindUserById(id)
     if err != nil {
         return err
     }
     return db.Delete(&User{}, id).Error
 }
 
-func findUserByName(username string) (*User, error) {
+func FindUserByName(username string) (*User, error) {
     user := &User{}
     result := db.Model(&User{}).Where("username = ?", username).First(user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-        return nil, userNotFound
+        return nil, ErrUserNotFound
     }
     return user, result.Error
 }
 
-func findUserById(id uint) (*User, error) {
+func FindUserById(id uint64) (*User, error) {
     user := &User{}
     result := db.Model(&User{}).Where("id = ?", id).First(user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-        return nil, userNotFound
+        return nil, ErrUserNotFound
     }
     return user, result.Error
 }

@@ -13,16 +13,16 @@ import (
 var jwtKey = []byte(config.Config.Server.JwtKey)
 
 type Claims struct {
-    user model.User
-    isAdmin bool
+    User *model.User
+    IsAdmin bool
     jwt.RegisteredClaims
 }
 
-func generateToken(user model.User, isAdmin bool) (string, error) {
+func GenerateToken(user *model.User, isAdmin bool) (string, error) {
     expirationTime := time.Now().Add(5 * time.Minute)
     claims := &Claims{
-        user: user,
-        isAdmin: isAdmin,
+        User: user,
+        IsAdmin: isAdmin,
         RegisteredClaims: jwt.RegisteredClaims{
             ExpiresAt: jwt.NewNumericDate(expirationTime),
         },
@@ -32,7 +32,7 @@ func generateToken(user model.User, isAdmin bool) (string, error) {
     return tokenString, err
 }
 
-func parseToken(tokenString string) (*Claims, error) {
+func ParseToken(tokenString string) (*Claims, error) {
     claims := &Claims{}
     token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
         return jwtKey, nil
@@ -46,14 +46,14 @@ func parseToken(tokenString string) (*Claims, error) {
     return claims, err
 }
 
-func jwtAuthMiddleware() echo.MiddlewareFunc {
+func JWTAuthMiddleware() echo.MiddlewareFunc {
     return func(next echo.HandlerFunc) echo.HandlerFunc {
         return func(c echo.Context) error {
             tokenString := c.Request().Header.Get("Authorization")
             if tokenString == "" {
                 return echo.NewHTTPError(401, "token not found")
             }
-            claims, err := parseToken(tokenString)
+            claims, err := ParseToken(tokenString)
             if err == errors.New("invalid token") {
                 return echo.NewHTTPError(401, "invalid token")
             } else if err == errors.New("token expired") {
