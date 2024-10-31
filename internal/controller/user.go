@@ -6,6 +6,7 @@ import (
     "strconv"
     "crypto/md5"
     "github.com/labstack/echo"
+    "github.com/golang-jwt/jwt/v4"
 
     "user-management-system/internal/config"
     "user-management-system/internal/model"
@@ -169,7 +170,7 @@ func RefreshToken(c echo.Context) error {
     expirationTime := time.Now().Add(5 * time.Minute)
     claims.ExpiresAt.Time = expirationTime
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    tokenString, err := token.SignedString(utils.jwtKey)
+    tokenString, err := token.SignedString(utils.JWTKey)
     if err != nil {
         return echo.ErrInternalServerError
     }

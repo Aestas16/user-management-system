@@ -10,7 +10,7 @@ import (
     "user-management-system/internal/config"
 )
 
-var jwtKey = []byte(config.Config.Server.JwtKey)
+var JWTKey = []byte(config.Config.Server.JwtKey)
 
 type Claims struct {
     User *model.User
@@ -28,14 +28,14 @@ func GenerateToken(user *model.User, isAdmin bool) (string, error) {
         },
     }
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    tokenString, err := token.SignedString(jwtKey)
+    tokenString, err := token.SignedString(JWTKey)
     return tokenString, err
 }
 
 func ParseToken(tokenString string) (*Claims, error) {
     claims := &Claims{}
     token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-        return jwtKey, nil
+        return JWTKey, nil
     })
     if !token.Valid || err != nil {
         return claims, errors.New("invalid token")

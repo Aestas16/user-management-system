@@ -1,8 +1,9 @@
 package main
 
 import (
-    "fmt"
+    "strconv"
     "github.com/labstack/echo"
+    "github.com/labstack/echo/middleware"
 
     "user-management-system/internal/config"
     "user-management-system/internal/model"
@@ -16,5 +17,5 @@ func main() {
     config.InitConfig()
     model.InitDB()
     router.InitRouter(e)
-    e.Logger.Fatal(e.Start(":" + config.Config.Server.Port))
+    e.Logger.Fatal(e.Start(":" + strconv.Itoa(config.Config.Server.Port)))
 }
