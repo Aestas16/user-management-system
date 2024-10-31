@@ -19,7 +19,7 @@ func createUser(user *User) error {
     if err == nil {
         return userAlreadyExist
     }
-    return db.Model(&User{}).Create(user)
+    return db.Model(&User{}).Create(user).Error
 }
 
 func saveUser(user *User) error {
