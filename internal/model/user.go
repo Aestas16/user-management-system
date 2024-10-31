@@ -36,8 +36,8 @@ func deleteUserById(id uint) error {
 }
 
 func findUserByName(username string) (*User, error) {
-    user := User{}
-    result := db.Model(&User{}).Where("username = ?", username).First(&user)
+    user := &User{}
+    result := db.Model(&User{}).Where("username = ?", username).First(user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
         return nil, userNotFound
     }
@@ -45,8 +45,8 @@ func findUserByName(username string) (*User, error) {
 }
 
 func findUserById(id uint) (*User, error) {
-    user := User{}
-    result := db.Model(&User{}).Where("id = ?", id).First(&user)
+    user := &User{}
+    result := db.Model(&User{}).Where("id = ?", id).First(user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
         return nil, userNotFound
     }

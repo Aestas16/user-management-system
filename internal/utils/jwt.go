@@ -23,8 +23,8 @@ func generateToken(user model.User, isAdmin bool) (string, err) {
         user: user,
         isAdmin: isAdmin,
         RegisteredClaims: jwt.RegisteredClaims{
-            ExpiresAt: jwt.NewNumericDate(expirationTime)
-        }
+            ExpiresAt: jwt.NewNumericDate(expirationTime),
+        },
     }
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
     tokenString, err := token.SignedString(jwtKey)
