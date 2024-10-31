@@ -10,8 +10,9 @@ type Configuration struct {
     SQL     SQLConfig       `yaml:"postgresql"`
 }
 type ServerConfig struct {
-    Port    int      `yaml:"port"`
+    Port    int         `yaml:"port"`
     Version string      `yaml:"version"`
+    JwtKey  string      `yaml:"jwtkey"`
     Admin   AdminConfig `yaml:"admin"`
 }
 type AdminConfig struct {
@@ -21,7 +22,7 @@ type AdminConfig struct {
 type SQLConfig struct {
     User        string  `yaml:"user"`
     Password    string  `yaml:"password"`
-    Port        int  `yaml:"port"`
+    Port        int     `yaml:"port"`
     DBName      string  `yaml:"dbname"`
 }
 
