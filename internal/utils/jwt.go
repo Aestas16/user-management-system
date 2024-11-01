@@ -1,6 +1,7 @@
 package utils
 
 import (
+    "fmt"
     "time"
     "errors"
     "github.com/golang-jwt/jwt/v4"
@@ -11,6 +12,8 @@ import (
 )
 
 var JWTKey = []byte(config.Config.Server.JwtKey)
+var ErrInvalidToken = errors.New("invalid token")
+var ErrTokenExpired = errors.New("token expired")
 
 type Claims struct {
     User *model.User
@@ -38,10 +41,10 @@ func ParseToken(tokenString string) (*Claims, error) {
         return JWTKey, nil
     })
     if !token.Valid || err != nil {
-        return claims, errors.New("invalid token")
+        return claims, ErrInvalidToken
     }
     if time.Until(claims.ExpiresAt.Time) < 0 {
-        return claims, errors.New("token expired")
+        return claims, ErrTokenExpired
     }
     return claims, err
 }
@@ -54,11 +57,12 @@ func JWTAuthMiddleware() echo.MiddlewareFunc {
                 return echo.NewHTTPError(401, "token not found")
             }
             claims, err := ParseToken(tokenString)
-            if err == errors.New("invalid token") {
+            if err == ErrInvalidToken {
                 return echo.NewHTTPError(401, "invalid token")
-            } else if err == errors.New("token expired") {
+            } else if err == ErrTokenExpired {
                 return echo.NewHTTPError(401, "token expired")
             } else if err != nil {
+                fmt.Printf("%v\n", err);
                 return echo.ErrInternalServerError
             }
             c.Set("claims", claims)

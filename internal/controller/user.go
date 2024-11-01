@@ -14,15 +14,16 @@ import (
 )
 
 type User struct {
-    Username    string
-    Password    string
-    Email       string
+    Username    string  `json:"username"`
+    Password    string  `json:"password"`
+    Email       string  `json:"email"`
 }
 
 func UserInfo(c echo.Context) error {
-    claims := c.Get("claims").(utils.Claims)
+    claims := c.Get("claims").(*utils.Claims)
     id, err := strconv.ParseUint(c.Param("id"), 10, 64)
     if err != nil {
+        // fmt.Printf("qwq\n")
         return echo.ErrNotFound
     }
     if !claims.IsAdmin && claims.User.ID != id {
@@ -35,11 +36,11 @@ func UserInfo(c echo.Context) error {
         return echo.ErrInternalServerError
     }
     var resp struct {
-        username    string
-        email       string
+        Username    string  `json:"username"`
+        Email       string  `json:"email"`
     }
-    resp.username = user.Username
-    resp.email = user.Email
+    resp.Username = user.Username
+    resp.Email = user.Email
     return c.JSON(200, &resp)
 }
 
@@ -69,9 +70,9 @@ func UpdateUser(c echo.Context) error {
         return echo.ErrInternalServerError
     }
     var resp struct {
-        message string
+        Message string  `json:"message"`
     }
-    resp.message = "Success!"
+    resp.Message = "Success!"
     return c.JSON(200, &resp)
 }
 
@@ -94,9 +95,9 @@ func DeleteUser(c echo.Context) error {
         return echo.ErrInternalServerError
     }
     var resp struct {
-        message string
+        Message string  `json:"message"`
     }
-    resp.message = "Success!"
+    resp.Message = "Success!"
     return c.JSON(200, &resp)
 }
 
@@ -105,6 +106,7 @@ func RegisterUser(c echo.Context) error {
     if err := c.Bind(&req); err != nil {
         return echo.ErrBadRequest
     }
+    fmt.Printf("%v\n", req)
     if req.Username == "" || req.Password == "" {
         return echo.ErrBadRequest
     }
@@ -119,16 +121,16 @@ func RegisterUser(c echo.Context) error {
         return echo.ErrInternalServerError
     }
     var resp struct {
-        message string
+        Message string  `json:"message"`
     }
-    resp.message = "Success!"
+    resp.Message = "Success!"
     return c.JSON(201, &resp)
 }
 
 func LoginUser(c echo.Context) error {
     var req struct {
-        Username    string
-        Password    string
+        Username    string  `json:"username"`
+        Password    string  `json:"password"`
     }
     if err := c.Bind(&req); err != nil {
         return echo.ErrBadRequest
@@ -139,9 +141,9 @@ func LoginUser(c echo.Context) error {
             return echo.ErrInternalServerError
         }
         var resp struct {
-            tokenString string
+            TokenString string  `json:"token"`
         }
-        resp.tokenString = tokenString
+        resp.TokenString = tokenString
         return c.JSON(200, &resp)
     }
     req.Password = fmt.Sprintf("%x", md5.Sum([]byte(req.Password)))
@@ -159,9 +161,9 @@ func LoginUser(c echo.Context) error {
         return echo.ErrInternalServerError
     }
     var resp struct {
-        tokenString string
+        TokenString string  `json:"token"`
     }
-    resp.tokenString = tokenString
+    resp.TokenString = tokenString
     return c.JSON(200, &resp)
 }
 
@@ -175,8 +177,8 @@ func RefreshToken(c echo.Context) error {
         return echo.ErrInternalServerError
     }
     var resp struct {
-        tokenString string
+        TokenString string  `json:"token"`
     }
-    resp.tokenString = tokenString
+    resp.TokenString = tokenString
     return c.JSON(200, &resp)
 }

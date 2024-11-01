@@ -1,12 +1,13 @@
 package model
 
 import (
+    "fmt"
     "errors"
     "gorm.io/gorm"
 )
 
 type User struct {
-    ID          uint64    `gorm:"primaryKey;autoIncrement;index"`
+    ID          uint64  `gorm:"primaryKey;autoIncrement;index"`
     Username    string  `gorm:"type:varchar(80);unique;not null;" json:"username"`
     Password    string  `json:"password"`
     Email       string  `json:"email"`
@@ -36,8 +37,9 @@ func DeleteUserById(id uint64) error {
 }
 
 func FindUserByName(username string) (*User, error) {
+    fmt.Printf("%s\n", username)
     user := &User{}
-    result := db.Model(&User{}).Where("username = ?", username).First(user)
+    result := db.Where("username = ?", username).First(user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {
         return nil, ErrUserNotFound
     }
