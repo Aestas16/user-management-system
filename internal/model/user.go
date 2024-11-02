@@ -1,7 +1,6 @@
 package model
 
 import (
-    "fmt"
     "errors"
     "gorm.io/gorm"
 )
@@ -37,7 +36,6 @@ func DeleteUserById(id uint64) error {
 }
 
 func FindUserByName(username string) (*User, error) {
-    fmt.Printf("%s\n", username)
     user := &User{}
     result := db.Where("username = ?", username).First(user)
     if errors.Is(result.Error, gorm.ErrRecordNotFound) {

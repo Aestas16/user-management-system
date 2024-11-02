@@ -23,7 +23,6 @@ func UserInfo(c echo.Context) error {
     claims := c.Get("claims").(*utils.Claims)
     id, err := strconv.ParseUint(c.Param("id"), 10, 64)
     if err != nil {
-        // fmt.Printf("qwq\n")
         return echo.ErrNotFound
     }
     if !claims.IsAdmin && claims.User.ID != id {
@@ -106,7 +105,6 @@ func RegisterUser(c echo.Context) error {
     if err := c.Bind(&req); err != nil {
         return echo.ErrBadRequest
     }
-    fmt.Printf("%v\n", req)
     if req.Username == "" || req.Password == "" {
         return echo.ErrBadRequest
     }

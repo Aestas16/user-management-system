@@ -1,7 +1,6 @@
 package utils
 
 import (
-    "fmt"
     "time"
     "errors"
     "github.com/golang-jwt/jwt/v4"
@@ -62,7 +61,6 @@ func JWTAuthMiddleware() echo.MiddlewareFunc {
             } else if err == ErrTokenExpired {
                 return echo.NewHTTPError(401, "token expired")
             } else if err != nil {
-                fmt.Printf("%v\n", err);
                 return echo.ErrInternalServerError
             }
             c.Set("claims", claims)
